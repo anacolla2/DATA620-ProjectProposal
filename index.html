@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Ana Collado">
+
+<title>DATA620-Project 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DATA620-Project 1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Ana Collado </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="project-1-categorical-groups-and-centrality-in-gene-ontology-data" class="level1">
+<h1>Project 1: Categorical Groups and Centrality in Gene Ontology Data</h1>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>For your first project, you are asked to:</p>
+<ol type="1">
+<li><p>Identify and load a network dataset that has some categorical information available for each node.</p></li>
+<li><p>For each of the nodes in the dataset, calculate degree centrality and eigenvector centrality.</p></li>
+<li><p>Compare your centrality measures across your categorical groups.</p></li>
+</ol>
+<p>For example, using the dataset from a study of romantic relationships among high school students in Columbus, Ohio [<a href="http://researchnews.osu.edu/archive/chains.html" class="uri">http://researchnews.osu.edu/archive/chains.html</a>, you might want to determine if there are any differences in your calculated centrality measures between the two sexes. You might use a t-test or another statistical measure to support your findings.</p>
+</div>
+</div>
+</div>
+<section id="data-load" class="level3">
+<h3 class="anchored" data-anchor-id="data-load">Data Load</h3>
+<div id="c2e9ffb4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In this first project, I will use SNAP data titled <a href="https://snap.stanford.edu/biodata/datasets/10024/10024-GF-Miner.html">Gene Function Association Network</a><a href="https://snap.stanford.edu/data/memetracker9.html"></a>. The dataset contains an association network of over 22k nodes and over 16k edges for gene function. The edges are meant describe what a gene does.</p>
+<div id="34e85935" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>genes<span class="op">=</span>pd.read_csv(<span class="st">"GF-Miner_miner-gene-function.tsv"</span>, sep<span class="op">=</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>genes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"># GO_ID</th>
+<th data-quarto-table-cell-role="th">C0</th>
+<th data-quarto-table-cell-role="th">C1</th>
+<th data-quarto-table-cell-role="th">Gene</th>
+<th data-quarto-table-cell-role="th">C3</th>
+<th data-quarto-table-cell-role="th">C5</th>
+<th data-quarto-table-cell-role="th">C6</th>
+<th data-quarto-table-cell-role="th">C7</th>
+<th data-quarto-table-cell-role="th">C8</th>
+<th data-quarto-table-cell-role="th">C9</th>
+<th data-quarto-table-cell-role="th">C10</th>
+<th data-quarto-table-cell-role="th">C11</th>
+<th data-quarto-table-cell-role="th">C12</th>
+<th data-quarto-table-cell-role="th">C13</th>
+<th data-quarto-table-cell-role="th">C14</th>
+<th data-quarto-table-cell-role="th">C15</th>
+<th data-quarto-table-cell-role="th">C16</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>GO:0005509</td>
+<td>UniProtKB</td>
+<td>A0A024QZ42</td>
+<td>PDCD6</td>
+<td>NaN</td>
+<td>GO_REF:0000002</td>
+<td>IEA</td>
+<td>InterPro:IPR002048</td>
+<td>F</td>
+<td>HCG1985580, isoform CRA_c</td>
+<td>A0A024QZ42_HUMAN|PDCD6|hCG_1985580</td>
+<td>protein</td>
+<td>taxon:9606</td>
+<td>20160409</td>
+<td>InterPro</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>GO:0004672</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000002</td>
+<td>IEA</td>
+<td>InterPro:IPR000719|InterPro:IPR002290|InterPro...</td>
+<td>F</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>taxon:9606</td>
+<td>20160409</td>
+<td>InterPro</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>GO:0005524</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000038</td>
+<td>IEA</td>
+<td>UniProtKB-KW:KW-0067</td>
+<td>F</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>taxon:9606</td>
+<td>20160410</td>
+<td>UniProt</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>GO:0005634</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000052</td>
+<td>IDA</td>
+<td>NaN</td>
+<td>C</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>taxon:9606</td>
+<td>20101115</td>
+<td>HPA</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>GO:0005737</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000052</td>
+<td>IDA</td>
+<td>NaN</td>
+<td>C</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>taxon:9606</td>
+<td>20101115</td>
+<td>HPA</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>As much as I enjoy hearing about molecular world, I’m nonetheless unfamiliar with its many intricacies; particularly in the field of Genomics. The variables in the dataset are labeled alphanumerically. This format does’t explain or hint at the meaning of the observations, so it’s not accessible for those unfamiliar with the subject matter. I’ll need to research the datapoints in order to understand the variables as there is also no data dictionary. All of the columns will require renaming for clarity.</p>
+<p>Before I begin researching, let’s check out how many groups and NA values in each column:</p>
+<div id="bc0b9ffe" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-- organizing overview--</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>overview<span class="op">=</span> (</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  genes</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  .agg([<span class="st">"nunique"</span>, <span class="kw">lambda</span> x: x.isna().<span class="bu">sum</span>()])</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  .T</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#-- renaming summary columns for clarity--</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#-- and the index because I prefer it this way--</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>overview<span class="op">=</span>overview.reset_index()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>overview.columns<span class="op">=</span>[<span class="st">"variable"</span>, <span class="st">"unique"</span>, <span class="st">"NA count"</span>]</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>overview</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">variable</th>
+<th data-quarto-table-cell-role="th">unique</th>
+<th data-quarto-table-cell-role="th">NA count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td># GO_ID</td>
+<td>16628</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>C0</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>C1</td>
+<td>6676</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>Gene</td>
+<td>5957</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>C3</td>
+<td>5</td>
+<td>16407</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>C5</td>
+<td>4742</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>C6</td>
+<td>13</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>C7</td>
+<td>6160</td>
+<td>6106</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>C8</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>C9</td>
+<td>6006</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10</td>
+<td>C10</td>
+<td>6660</td>
+<td>36</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11</td>
+<td>C11</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">12</td>
+<td>C12</td>
+<td>17</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">13</td>
+<td>C13</td>
+<td>2213</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">14</td>
+<td>C14</td>
+<td>22</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">15</td>
+<td>C15</td>
+<td>525</td>
+<td>15961</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">16</td>
+<td>C16</td>
+<td>76</td>
+<td>16494</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>There are several columns with many NA; <code>C3</code>, <code>C7</code>, <code>C10</code>, <code>C15</code>, <code>C16</code> are all flagged. In the interest of time, I will likely impute NA values, but I <em>do</em> want to acknowledge the context of the NA values first. There are several columns I’m sure I wont need, so I will remove them now.</p>
+<p>My main focus here is <em>human</em> data. Although the column has no missing values, all datapoints in <code>C12</code> <em>include</em> humans, so I am sure it will not be needed. I won’t need the PubMed identifiers in <code>C13</code>, and I won’t need the Ontology Resource Names in <code>C14</code>.</p>
+<div id="2f8b4b95" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-- removing column not needed--</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>genes<span class="op">=</span> genes.drop(columns<span class="op">=</span>[<span class="st">"C12"</span>])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>genes<span class="op">=</span> genes.drop(columns<span class="op">=</span>[<span class="st">"C13"</span>])</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>genes<span class="op">=</span> genes.drop(columns<span class="op">=</span>[<span class="st">"C14"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="creating-a-data-dictionary" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-data-dictionary">Creating a Data Dictionary</h3>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<ul>
+<li><code>GO_ID</code> : A standardized gene ontology framework of unique identifier used in biology <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
+<li><code>C0</code>: Database</li>
+<li><code>C1</code>: Gene ID- Genes receive a unique ID for database records. I’ll save this column for labeling. The ID mappings can be retrieved using <a href="https://www.uniprot.org/id-mapping" class="uri">https://www.uniprot.org/id-mapping</a></li>
+<li><code>Gene</code> : Named Genes</li>
+<li><code>C3</code> : Action upon Gene (Colocation, Contribution. . .)</li>
+<li><code>C5</code>: Reference</li>
+<li><code>C6</code>: Evidence code- Note on function of a gene 13 unique values:<br>
+<a href="https://geneontology.org/docs/guide-go-evidence-codes/" class="uri">https://geneontology.org/docs/guide-go-evidence-codes/</a><br>
+experimental evidence, phylogenetic evidence (inferred through experimental evidence), computational evidence, author statements (statements made by authors in scientific papers), curatorial statements (an expert from a database), automatically generated annotations (automated, no person reviewed this)<br>
+<br>
+maybe i can add alpha values to depict how credible the gene assignments are?</li>
+<li><code>C7</code>: external reference</li>
+<li><code>C8</code>: Aspect/Category_type- Process, Function, Component (secondary nodes?) type of role gene plays</li>
+<li><code>C9</code>: Encoder_name</li>
+<li><code>C10</code> : Encoder</li>
+<li><code>C11</code> : Function type</li>
+<li><code>C12</code> : Taxonomy. All datapoints include 8606 which is homosapien</li>
+<li><code>C13</code> : PMID- not needed</li>
+<li><code>C14</code>: Ontology Resources- not needed</li>
+<li><code>C15</code>: Action upon entity (entity can be searched)</li>
+<li><code>C16</code> : Database reference</li>
+</ul>
+</div>
+</div>
+</div>
+<p>To create this dictionary I have sampled random datapoint within each column and researched them until I found consensus. For example, <code>C8</code> is a category/type. I searched “Gene Ontology F, C, P” and found <a href="https://geneontology.org/docs/go-enrichment-analysis/">Go Enrichment Analysis Tools</a>. The site describes how the gene ontology tool is used and they explain that a “GO Aspect” may be selected and these are “molecular <strong>function</strong>”, “cellular <strong>component</strong>”, and “biological <strong>process</strong>”. I went back and searched up the corresponding IDs for my randomly chosen rows to confirm their listed “Aspect” matched their line in <code>C8</code>. I renamed the column as <code>category_type</code> instead of <code>aspect</code> because I just preferred it.<br>
+<img src="uniprot-function-example.png" class="img-fluid" alt="Example search, “aspect” is listed as “molecular function” and it is coded as “F” in column C8"></p>
+<p>Now, let’s modify the column names to be slightly more descriptive:</p>
+<div id="2f86d777" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>genes.columns<span class="op">=</span>[<span class="st">"go_id"</span>, <span class="st">"database"</span>, <span class="st">"gene_id"</span>, <span class="st">"gene_name"</span>, <span class="st">"action"</span>, <span class="st">"ref"</span>, <span class="st">"evidence_code"</span>, <span class="st">"ex_ref"</span>, <span class="st">"category_type"</span>, <span class="st">"encode_name"</span>, <span class="st">"encoder"</span>, <span class="st">"func_type"</span>, <span class="st">"action_on_entity"</span>, <span class="st">"db_ref"</span>]</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>genes.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">go_id</th>
+<th data-quarto-table-cell-role="th">database</th>
+<th data-quarto-table-cell-role="th">gene_id</th>
+<th data-quarto-table-cell-role="th">gene_name</th>
+<th data-quarto-table-cell-role="th">action</th>
+<th data-quarto-table-cell-role="th">ref</th>
+<th data-quarto-table-cell-role="th">evidence_code</th>
+<th data-quarto-table-cell-role="th">ex_ref</th>
+<th data-quarto-table-cell-role="th">category_type</th>
+<th data-quarto-table-cell-role="th">encode_name</th>
+<th data-quarto-table-cell-role="th">encoder</th>
+<th data-quarto-table-cell-role="th">func_type</th>
+<th data-quarto-table-cell-role="th">action_on_entity</th>
+<th data-quarto-table-cell-role="th">db_ref</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>GO:0005509</td>
+<td>UniProtKB</td>
+<td>A0A024QZ42</td>
+<td>PDCD6</td>
+<td>NaN</td>
+<td>GO_REF:0000002</td>
+<td>IEA</td>
+<td>InterPro:IPR002048</td>
+<td>F</td>
+<td>HCG1985580, isoform CRA_c</td>
+<td>A0A024QZ42_HUMAN|PDCD6|hCG_1985580</td>
+<td>protein</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>GO:0004672</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000002</td>
+<td>IEA</td>
+<td>InterPro:IPR000719|InterPro:IPR002290|InterPro...</td>
+<td>F</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>GO:0005524</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000038</td>
+<td>IEA</td>
+<td>UniProtKB-KW:KW-0067</td>
+<td>F</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>GO:0005634</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000052</td>
+<td>IDA</td>
+<td>NaN</td>
+<td>C</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>GO:0005737</td>
+<td>UniProtKB</td>
+<td>A0A024QZP7</td>
+<td>CDK1</td>
+<td>NaN</td>
+<td>GO_REF:0000052</td>
+<td>IDA</td>
+<td>NaN</td>
+<td>C</td>
+<td>Cyclin-dependent kinase 1</td>
+<td>A0A024QZP7_HUMAN|CDK1</td>
+<td>protein</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Now our NA overview will be more readable:</p>
+<div id="6f2a9efb" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>overview<span class="op">=</span> (</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  genes</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  .agg([<span class="st">"nunique"</span>, <span class="kw">lambda</span> x: x.isna().<span class="bu">sum</span>()])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  .T)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>overview<span class="op">=</span>overview.reset_index()</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>overview.columns<span class="op">=</span>[<span class="st">"variable"</span>, <span class="st">"unique"</span>, <span class="st">"NA count"</span>]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>overview</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">variable</th>
+<th data-quarto-table-cell-role="th">unique</th>
+<th data-quarto-table-cell-role="th">NA count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>go_id</td>
+<td>16628</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>database</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>gene_id</td>
+<td>6676</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>gene_name</td>
+<td>5957</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>action</td>
+<td>5</td>
+<td>16407</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>ref</td>
+<td>4742</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>evidence_code</td>
+<td>13</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>ex_ref</td>
+<td>6160</td>
+<td>6106</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>category_type</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>encode_name</td>
+<td>6006</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10</td>
+<td>encoder</td>
+<td>6660</td>
+<td>36</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11</td>
+<td>func_type</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">12</td>
+<td>action_on_entity</td>
+<td>525</td>
+<td>15961</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">13</td>
+<td>db_ref</td>
+<td>76</td>
+<td>16494</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="creating-a-graph" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-graph">Creating a Graph</h3>
+<p>The data does specify that the edges are the functional annotations and nodes are the <code>go_id</code> and <code>gene_name</code>. In this project however we’ll use <code>category_type</code> and <code>database</code> as our categorical groups because each variable is perfect with only 3 distinct values.</p>
+<p><u>I think <code>category_type</code> will have interesting centrality within its groups. Biological Process will presumably have many connections. Molecular functions should be second best. Cellular Component would presumably . and</u></p>
+<p>This graph will be undirected because we’re exploring mutual connection. Action had far to many NA values (which could very well mean there is no action to be had). Well, I might as well check out the denomination of that, while we’re on the topic.</p>
+<div id="75990457" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#--grabbing the points needed--</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>na_actions<span class="op">=</span> genes[genes[<span class="st">"action"</span>].isna()]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>cat_total<span class="op">=</span> genes.groupby([<span class="st">"category_type"</span>]).size().reset_index(name<span class="op">=</span><span class="st">"count"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>na_counts<span class="op">=</span> na_actions.groupby([<span class="st">"category_type"</span>]).size().reset_index(name<span class="op">=</span><span class="st">"na_count"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#--neat df--</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>summary_denom<span class="op">=</span> pd.merge(na_counts, cat_total, on<span class="op">=</span><span class="st">"category_type"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>summary_denom[<span class="st">"na_percent"</span>]<span class="op">=</span> (summary_denom[<span class="st">"na_count"</span>]<span class="op">/</span>summary_denom[<span class="st">"count"</span>]<span class="op">*</span><span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">2</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>summary_denom</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">category_type</th>
+<th data-quarto-table-cell-role="th">na_count</th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">na_percent</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>C</td>
+<td>1463</td>
+<td>1508</td>
+<td>97.02</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>F</td>
+<td>3841</td>
+<td>3944</td>
+<td>97.39</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>P</td>
+<td>11103</td>
+<td>11176</td>
+<td>99.35</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>There doesn’t seem to be much difference in the categories, in terms of the NA values within the <code>action</code> column. Over 90% of values are NA, but judging by the sheer volume and attention to detail of Genomic data– its very likely there is no immediate action from the genes marked as such. I thought to keep the <code>action</code> column and use an “if” function to display action when available, however, this <code>action</code> column would classify as directional. The rest of my data is best in an undirected graph depicting relationships. For the sake of simplicity and time, I will choose to drop the <code>action</code> column.</p>
+<div id="251f85ec" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>genes<span class="op">=</span> genes.drop(columns<span class="op">=</span>[<span class="st">"action"</span>, <span class="st">"ex_ref"</span>, <span class="st">"action_on_entity"</span>, <span class="st">"db_ref"</span>, <span class="st">"encoder"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="6828dda4" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gg1<span class="op">=</span> nx.Graph()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I ran a preliminary graph and as its pictured below, it is far to dense to be readable. I will take a stratified sample of my data to maintain the original balance of the categorical values in <code>genes</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="gene_network.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="564"></p>
+</figure>
+</div>
+<div id="5f53e71c" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#--stratified sample--</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>sample<span class="op">=</span> genes.groupby(<span class="st">"category_type"</span>, group_keys<span class="op">=</span><span class="va">False</span>).sample(frac<span class="op">=</span> <span class="fl">0.05</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>gg1.add_edges_from(sample[[<span class="st">"gene_name"</span>, <span class="st">"evidence_code"</span>]].values)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>gg1.add_edges_from(sample[[<span class="st">"evidence_code"</span>, <span class="st">"go_id"</span>]].values)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>gg1.add_edges_from(sample[[<span class="st">"go_id"</span>, <span class="st">"category_type"</span>]].values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now that the data is ready for visualization. I want to solidify what it is I want to see in the graph. The vantage point I’m looking to take will include a variable I elaborated most on in the data dictionary I created earlier. <code>evidence_codes</code> are notes on the function of a gene. There are 26 unique codes in existence under 6 categories. The gene data i am using only has 13 unique codes after NA removal.</p>
+<section id="whats-important-about-this" class="level5">
+<h5 class="anchored" data-anchor-id="whats-important-about-this">Whats important about this?</h5>
+<p>The evidence codes can be depicted by alpha levels because there is a credibility hierarchy to them. “Non-traceable author statements” have less credibility than functions indicated from an actual experiment. So the shade of our graph will be linked to how</p>
+<div class="callout callout-style-simple callout-important no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>“Do certain GO aspects (category types) tend to rely on particular evidence types, and which genes appear within those pathways?”</strong></p>
+</div>
+</div>
+</div>
+<p>As much as visualization is worth, values are sometimes easier to understand. I’ll map the code acronyms for clarity.</p>
+<section id="intermission-values-and-regular-plot" class="level6">
+<h6 class="anchored" data-anchor-id="intermission-values-and-regular-plot">Intermission: Values and Regular Plot</h6>
+<div id="6b2b3a89" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>ec_names<span class="op">=</span> {<span class="st">"IEA"</span>: <span class="st">"Inferred from Electronic Annotation"</span>,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">"IDA"</span>: <span class="st">"Inferred from Direct Assay"</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">"ISS"</span>: <span class="st">"Inferred from Sequence or Structural Similarity"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">"IMP"</span>: <span class="st">"Inferred from Mutant Phenotype"</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">"IPI"</span>: <span class="st">"Inferred from Physical Interaction"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="st">"TAS"</span>: <span class="st">"Traceable Author Statement"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">"ND"</span>: <span class="st">"No biological Data available"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="st">"IBA"</span>: <span class="st">"Inferred from Biological aspect of Ancestor"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="st">"IEP"</span>: <span class="st">"Inferred from Expression Pattern"</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="st">"EXP"</span>: <span class="st">"Inferred from Experiment"</span>,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="st">"NAS"</span>: <span class="st">"Non-traceable Author Statement"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="st">"IGI"</span>: <span class="st">"Inferred from Genetic Interaction"</span>,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="st">"IC"</span>: <span class="st">"Inferred by Curator"</span>}</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>cta_types<span class="op">=</span> {<span class="st">"P"</span>: <span class="st">"Process"</span>,<span class="st">"F"</span>: <span class="st">"Function"</span>, <span class="st">"C"</span>: <span class="st">"Component"</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="6ee70088" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-- Mapping Evidence Names--</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>genes[<span class="st">"evidence_names"</span>]<span class="op">=</span> genes[<span class="st">"evidence_code"</span>].<span class="bu">map</span>(ec_names)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#-- Mapping Aspect/ Category Types--</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>genes[<span class="st">"aspect"</span>]<span class="op">=</span> genes[<span class="st">"category_type"</span>].<span class="bu">map</span>(cta_types)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Below is a table of evidence codes and how they’re distributed within each category:</p>
+<div id="89642feb" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>cred_count<span class="op">=</span> genes.groupby([<span class="st">"aspect"</span>, <span class="st">"evidence_names"</span>]).size().reset_index(name<span class="op">=</span><span class="st">"count"</span>).sort_values([<span class="st">"aspect"</span>, <span class="st">"count"</span>], ascending<span class="op">=</span> [<span class="va">True</span>,<span class="va">False</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A visual for thoroughness:</p>
+<div id="84ec83bd" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#--Pivotting because of the long labels--</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>piv_cred_count<span class="op">=</span> cred_count.pivot(index<span class="op">=</span><span class="st">"evidence_names"</span>, columns<span class="op">=</span><span class="st">"aspect"</span>, values<span class="op">=</span><span class="st">"count"</span>).fillna(<span class="dv">0</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>piv_cred_count<span class="op">=</span> piv_cred_count[[<span class="st">"Process"</span>, <span class="st">"Function"</span>, <span class="st">"Component"</span>]]</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>piv_cred_count<span class="op">=</span> piv_cred_count.sort_values(by<span class="op">=</span><span class="st">"Process"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>ax<span class="op">=</span> piv_cred_count.plot(kind<span class="op">=</span><span class="st">"barh"</span>,figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">7</span>),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>color<span class="op">=</span> [<span class="st">"hotpink"</span>, <span class="st">"dodgerblue"</span>, <span class="st">"olivedrab"</span>])</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Count"</span>)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">""</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Evidence Code Frequency by Category Type"</span>)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span> <span class="st">"Category Type"</span>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="credibility" class="level6">
+<h6 class="anchored" data-anchor-id="credibility">Credibility</h6>
+<p>I’m scoring the evidence types as follows:<br>
+<img src="images/alphascale_plan.png" class="img-fluid" width="582"></p>
+<p>Those under experimental evidence will be graded as 1 such as <code>EXP</code>, <code>IDA</code>, <code>IPI</code>, <code>IPM</code> , <code>IGI</code>, and <code>IEP</code> . The lowest value should still be visible so 0.2 will be assigned to <code>IEA</code> and <code>ND</code>.</p>
+<div id="e7906009" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>alpha_map<span class="op">=</span> {<span class="st">"IEA"</span>: <span class="fl">0.2</span>,<span class="st">"ND"</span>: <span class="fl">0.2</span>,<span class="st">"TAS"</span>: <span class="fl">0.5</span>,<span class="st">"NAS"</span>: <span class="fl">0.5</span>,<span class="st">"IC"</span>: <span class="fl">0.6</span>,<span class="st">"ISS"</span>: <span class="fl">0.7</span>,<span class="st">"IBA"</span>: <span class="fl">0.8</span>,<span class="st">"EXP"</span>: <span class="fl">1.0</span>,<span class="st">"IDA"</span>: <span class="fl">1.0</span>,<span class="st">"IPI"</span>: <span class="fl">1.0</span>, <span class="st">"IGI"</span>: <span class="fl">1.0</span>,<span class="st">"IMP"</span>: <span class="fl">1.0</span>,<span class="st">"IEP"</span>: <span class="fl">1.0</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="centrality" class="level2">
+<h2 class="anchored" data-anchor-id="centrality">Centrality</h2>
+<p>Even in my sample there are a lot of datapoints which will lead to another unreadable network clump. Centrality and eigenvector centrality will help identify which nodes are the most connected and which of those matter.</p>
+<div id="2c212a30" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>centrality<span class="op">=</span> nx.degree_centrality(gg1)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>eig_centrality<span class="op">=</span> nx.eigenvector_centrality(gg1, max_iter<span class="op">=</span><span class="dv">2000</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">#-- creating new columns for centrality-- </span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>gene_centrality<span class="op">=</span> (sample[[<span class="st">"gene_name"</span>]].drop_duplicates())</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>gene_centrality[<span class="st">"degree_centrality"</span>]<span class="op">=</span> gene_centrality[<span class="st">"gene_name"</span>].<span class="bu">map</span>(centrality)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>gene_centrality[<span class="st">"eigen_centrality"</span>]<span class="op">=</span> gene_centrality[<span class="st">"gene_name"</span>].<span class="bu">map</span>(eig_centrality)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">#-- isolating top genes--</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>top_genes<span class="op">=</span> gene_centrality.sort_values(<span class="st">"eigen_centrality"</span>,ascending<span class="op">=</span><span class="va">False</span>).head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="032d8c61" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>top_sample<span class="op">=</span> sample[sample[<span class="st">"gene_name"</span>].isin(top_genes[<span class="st">"gene_name"</span>])]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="the-graph" class="level6">
+<h6 class="anchored" data-anchor-id="the-graph">The Graph</h6>
+<div id="fd58b367" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-- edges--</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>gg1.add_edges_from(top_sample[[<span class="st">"gene_name"</span>, <span class="st">"evidence_code"</span>]].values)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>gg1.add_edges_from(top_sample[[<span class="st">"evidence_code"</span>, <span class="st">"go_id"</span>]].values)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>gg1.add_edges_from(top_sample[[<span class="st">"go_id"</span>, <span class="st">"category_type"</span>]].values)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co">#--node gruops--</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>gene_nodes<span class="op">=</span> <span class="bu">set</span>(top_sample[<span class="st">"gene_name"</span>])</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>evidence_nodes<span class="op">=</span> <span class="bu">set</span>(top_sample[<span class="st">"evidence_code"</span>])</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>go_nodes<span class="op">=</span> <span class="bu">set</span>(top_sample[<span class="st">"go_id"</span>])</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>category_nodes<span class="op">=</span> <span class="bu">set</span>(top_sample[<span class="st">"category_type"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="aef77450" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-- assigning my customizations--</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>pos<span class="op">=</span> nx.spring_layout(gg1, seed<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>node_colors<span class="op">=</span> []</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node <span class="kw">in</span> gg1.nodes():</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> node <span class="kw">in</span> evidence_nodes:</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    alpha <span class="op">=</span> alpha_map.get(node, <span class="dv">1</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    node_colors.append((<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>, alpha))</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span>:</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>      node_colors.append((<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8cbc0a13" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-- drawing the graph--</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">35</span>,<span class="dv">30</span>), dpi<span class="op">=</span><span class="dv">300</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>nx.draw_networkx_edges(gg1, pos, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>nx.draw_networkx_nodes(gg1, pos, node_color<span class="op">=</span>node_colors)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"GO Annotation Network"</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+</section>
+<section id="references" class="level1">
+<h1>References</h1>
+<p>Matplotlib List of Named colors:<br>
+<a href="https://matplotlib.org/stable/gallery/color/named_colors.html" class="uri">https://matplotlib.org/stable/gallery/color/named_colors.html</a></p>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><a href="https://geneontology.org/docs/ontology-documentation/" class="uri">https://geneontology.org/docs/ontology-documentation/</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
