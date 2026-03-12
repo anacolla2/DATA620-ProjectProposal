@@ -2,11 +2,14 @@
 title: "DATA620-Project 1"
 author: "Ana Collado"
 format: html
+embed-resources: true
+fig-align: center
+toc: true
 editor: visual
 jupyter: python3
 ---
 
-# Project 1: Categorical Groups and Centrality in Gene Ontology Data
+# Categorical Groups and Centrality in Gene Ontology Data
 
 ::: {.callout-note appearance="minimal" icon="false"}
 For your first project, you are asked to:
