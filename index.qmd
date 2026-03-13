@@ -329,10 +329,10 @@ eig_centrality= nx.eigenvector_centrality(gg1, max_iter=2000)
 gene_centrality= (sample[["gene_name"]].drop_duplicates())
 
 gene_centrality["degree_centrality"]= gene_centrality["gene_name"].map(centrality)
-gene_centrality["eigen_centrality"]= gene_centrality["gene_name"].map(eig_centrality)
+gene_centrality["eig_centrality"]= gene_centrality["gene_name"].map(eig_centrality)
 
 #-- isolating top genes--
-top_genes= gene_centrality.sort_values("eigen_centrality",ascending=False).head(10)
+top_genes= gene_centrality.sort_values("eig_centrality",ascending=False).head(10)
 ```
 
 ```{python}
@@ -356,28 +356,51 @@ category_nodes= set(top_sample["category_type"])
 
 ```{python}
 #-- assigning my customizations--
+category_color_map= {"P": "skyblue", "F": "skyblue", "C": "skyblue"}
+gene_color= "mediumpurple"
+go_color= "gold"
+evidence_code_color= "darkgray"
 
-pos= nx.spring_layout(gg1, seed=30)
-
-node_colors= []
+#-- selecting colors--
+node_colors = []
 
 for node in gg1.nodes():
-  if node in evidence_nodes:
-    alpha= alpha_map.get(node, 1)
-    node_colors.append((0.5,0.5,0.5, alpha))
+  if node in category_nodes:
+    node_colors.append(category_color_map[node])
+  elif node in gene_nodes:
+    node_colors.append(gene_color)
+  elif node in evidence_nodes:
+    node_colors.append(evidence_code_color)
+  elif node in go_nodes:
+    node_colors.append(go_color)
   else:
-      node_colors.append((0.5,0.5,0.5,1))
-     
+    node_colors.append("lightgray")
+        
+pos= nx.spring_layout(gg1, seed=30)
+```
+
+I'll assign a scaling function over the nodes in my graph. In testing I find
+that despite sampling there is still too many nodes and edges in the graph to
+make it readable. Adding a visual priority to nodes that have the highest eigen
+values/ are most important and connected to other important nodes.
+
+```{python}
+#--scaling eig values to reflect on node size--
+base_node_size=50
+scale= 100
+node_sizes= [base_node_size+ eig_centrality[node] * scale for node in gg1.nodes()]
 ```
 
 ```{python}
 #-- drawing the graph--
 plt.figure(figsize=(35,30), dpi=300)
 
-nx.draw_networkx_edges(gg1, pos, alpha=0.3)
-nx.draw_networkx_nodes(gg1, pos, node_color=node_colors)
+nx.draw_networkx_edges(gg1, pos, alpha=0.25, width=.5)
+nx.draw_networkx_nodes(gg1, pos, node_color= node_colors, node_size=node_sizes)
 
-plt.title("GO Annotation Network")
+nx.draw_networkx_labels(gg1, pos, font_size=9)
+
+plt.title("Gene Ontology Annotation Network: Relationships Between GO Aspects, Evidence Codes, and Associated Genes")
 plt.axis("off")
 plt.show()
 ```
