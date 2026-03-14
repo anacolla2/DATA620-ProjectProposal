@@ -5,6 +5,7 @@ format: html
 embed-resources: true
 fig-align: center
 toc: true
+toc-depth: 6
 editor: visual
 jupyter: python3
 ---
@@ -21,13 +22,6 @@ For your first project, you are asked to:
     eigenvector centrality.
 
 3.  Compare your centrality measures across your categorical groups.
-
-For example, using the dataset from a study of romantic relationships among high
-school students in Columbus, Ohio
-\[<http://researchnews.osu.edu/archive/chains.html>, you might want to determine
-if there are any differences in your calculated centrality measures between the
-two sexes. You might use a t-test or another statistical measure to support your
-findings.
 :::
 
 ### Data Load
@@ -37,6 +31,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from scipy import stats
 ```
 
 In this first project, I will use SNAP data titled [Gene Function Association
@@ -308,14 +303,14 @@ I'm scoring the evidence types as follows:\
 ![](images/alphascale_plan.png){width="582"}
 
 Those under experimental evidence will be graded as 1 such as `EXP`, `IDA`,
-`IPI`, `IPM` , `IGI`, and `IEP` . The lowest value should still be visible so
-0.2 will be assigned to `IEA` and `ND`.
+`IPI`, `IPM` , `IGI`, and `IEP` .The lowest value should still be visible so 0.2
+will be assigned to `IEA` and `ND`.
 
 ```{python}
 alpha_map= {"IEA": 0.2,"ND": 0.2,"TAS": 0.5,"NAS": 0.5,"IC": 0.6,"ISS": 0.7,"IBA": 0.8,"EXP": 1.0,"IDA": 1.0,"IPI": 1.0, "IGI": 1.0,"IMP": 1.0,"IEP": 1.0}
 ```
 
-## Centrality 
+## Centrality of Nodes in a Graph
 
 Even in my sample there are a lot of datapoints which will lead to another
 unreadable network clump. Centrality and eigenvector centrality will help
@@ -332,7 +327,7 @@ gene_centrality["degree_centrality"]= gene_centrality["gene_name"].map(centralit
 gene_centrality["eig_centrality"]= gene_centrality["gene_name"].map(eig_centrality)
 
 #-- isolating top genes--
-top_genes= gene_centrality.sort_values("eig_centrality",ascending=False).head(10)
+top_genes= gene_centrality.sort_values("eig_centrality",ascending=False).head(5)
 ```
 
 ```{python}
@@ -387,7 +382,7 @@ values/ are most important and connected to other important nodes.
 ```{python}
 #--scaling eig values to reflect on node size--
 base_node_size=50
-scale= 100
+scale= 1000
 node_sizes= [base_node_size+ eig_centrality[node] * scale for node in gg1.nodes()]
 ```
 
@@ -397,6 +392,7 @@ plt.figure(figsize=(35,30), dpi=300)
 
 nx.draw_networkx_edges(gg1, pos, alpha=0.25, width=.5)
 nx.draw_networkx_nodes(gg1, pos, node_color= node_colors, node_size=node_sizes)
+nx.draw_networkx_nodes(gg1, pos, )
 
 nx.draw_networkx_labels(gg1, pos, font_size=9)
 
@@ -404,6 +400,75 @@ plt.title("Gene Ontology Annotation Network: Relationships Between GO Aspects, E
 plt.axis("off")
 plt.show()
 ```
+
+### Comparing Centrality Across Categorical Groups
+
+The categories assigned to the genes describe what the particular gene
+participates in. As we've seen, genes in this dataset predominantly participate
+in biological processes. And less so in
+
+```{python}
+#--creating summary of centrality by nodes--
+centrality_summary= pd.DataFrame({
+  "node": list(centrality.keys()),
+  "deg_centr": list(centrality.values()),
+  "eig_centr": list(eig_centrality.values())})
+  
+#-- attaching the categories--
+cats= genes[["go_id", "category_type"]].drop_duplicates()
+cats.columns= ["node", "category_type"]
+
+#--putting them together--
+centrality_summary= centrality_summary.merge(cats, on="node", how= "left")
+
+#--labeling genes just in case--
+centrality_summary["category_type"]= centrality_summary["category_type"].fillna("gene")
+```
+
+```{python}
+centrality_summary.groupby("category_type")[["deg_centr", "eig_centr"]].describe()
+```
+
+```{python}
+
+fig, axes= plt.subplots(1, 2, figsize= (11, 4))
+
+for ax, col, label in zip(axes, ["deg_centr", "eig_centr"], ["Degree Centrality", "Eigenvector Centrality"]):
+  groups= [group[col].values for x, group in centrality_summary.groupby("category_type")]
+  labels= centrality_summary["category_type"].unique()
+  ax.boxplot(groups, labels=labels)
+  ax.set_title(label)
+  ax.set_ylabel("Score")
+  ax.set_xlabel("GO Aspect / Node Type") 
+
+plt.tight_layout()
+plt.show()
+```
+
+### Statistical Tests on Categorical Data
+
+(Kruskal Wallas)
+
+### Centrality by Credibility
+
+```{python}
+
+for x, row in genes.iterrows():
+  gene_node= row["gene_name"]
+  go_node= row["go_id"]
+  evidence_node= row["evidence_code"]
+  alpha_values= alpha_map.get(evidence_node, 0.5)
+  
+  gg1.add_node(gene_node, node_type="gene")
+  gg1.add_node(go_node, node_type="gene")
+  gg1.add_edge(gene_node, go_node, alpha=alpha_values, evidence_code= evidence_node)
+```
+
+##### Confidence Graph
+
+##### recomputing centrality
+
+##### comparison to full graph results
 
 --------------------------------------------------------------------------------
 
