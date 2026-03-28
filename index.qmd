@@ -6,6 +6,9 @@ embed-resources: true
 fig-align: center
 toc: true
 toc-depth: 6
+execute: 
+  warning: false
+  error: false
 editor: visual
 jupyter: python3
 ---
@@ -27,42 +30,46 @@ For your first project, you are asked to:
 ### Data Load
 
 ```{python}
+#| echo: true
+#| warning: false
+#| error: false
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from scipy import stats
+import scikit_posthocs as sp
+import seaborn as sns
+from plotly import graph_objects as go
+from networkx.drawing.nx_agraph import graphviz_layout
+from scipy.stats import stats, kruskal, spearmanr
 ```
 
 In this first project, I will use SNAP data titled [Gene Function Association
 Network](https://snap.stanford.edu/biodata/datasets/10024/10024-GF-Miner.html)[
 ](https://snap.stanford.edu/data/memetracker9.html). The dataset contains an
 association network of over 22k nodes and over 16k edges for gene function. The
-edges are meant describe what a gene does.
+edges are meant describe what a gene does or is involved in.
 
 ```{python}
 genes=pd.read_csv("GF-Miner_miner-gene-function.tsv", sep= "\t")
 genes.head()
 ```
 
-As much as I enjoy hearing about molecular world, I'm nonetheless unfamiliar
-with its many intricacies; particularly in the field of Genomics. The variables
-in the dataset are labeled alphanumerically. This format does't explain or hint
-at the meaning of the observations, so it's not accessible for those unfamiliar
-with the subject matter. I'll need to research the datapoints in order to
-understand the variables as there is also no data dictionary. All of the columns
-will require renaming for clarity.
+As interesting as the molecular world is I'm unfamiliar with its many
+intricacies; particularly in the field of Genomics. The variables in the dataset
+are labeled alphanumerically. This format doesn't explain or hint at the meaning
+of the observations. As it is, it's not accessible for those unfamiliar with the
+subject matter. I'll need to research the datapoints in order to understand the
+variables, as there is also no data dictionary provided with the data. All of
+the columns will require renaming for clarity.
 
 Before I begin researching, let's check out how many groups and NA values in
 each column:
 
 ```{python}
 #-- organizing overview--
-overview= (
-  genes
-  .agg(["nunique", lambda x: x.isna().sum()])
-  .T
-)
+overview= (genes.agg(["nunique", lambda x: x.isna().sum()]).T)
 #-- renaming summary columns for clarity--
 #-- and the index because I prefer it this way--
 overview=overview.reset_index()
@@ -82,23 +89,34 @@ Resource Names in `C14`.
 
 ```{python}
 #-- removing column not needed--
-genes= genes.drop(columns=["C12"])
-genes= genes.drop(columns=["C13"])
-genes= genes.drop(columns=["C14"])
+genes= genes.drop(columns=["C12", "C13", "C14"])
 ```
 
 ### Creating a Data Dictionary
 
 ::: {.callout-note appearance="minimal" icon="false"}
 -   `GO_ID` : A standardized gene ontology framework of unique identifier used
-    in biology [^1]
--   `C0`: Database
+    in biology [^1]\
+    rename to **go_id**
+
+-   `C0`: Database\
+    rename to **database**
+
 -   `C1`: Gene ID- Genes receive a unique ID for database records. I'll save
     this column for labeling. The ID mappings can be retrieved using
-    <https://www.uniprot.org/id-mapping>
+    <https://www.uniprot.org/id-mapping>\
+    rename to **gene_id**
+
 -   `Gene` : Named Genes
--   `C3` : Action upon Gene (Colocation, Contribution. . .)
--   `C5`: Reference
+
+    rename to **gene_name**
+
+-   `C3` : Action upon Gene (Colocation, Contribution. . .)\
+    rename to **action**
+
+-   `C5`: Reference\
+    rename to **ref**
+
 -   `C6`: Evidence code- Note on function of a gene 13 unique values:\
     <https://geneontology.org/docs/guide-go-evidence-codes/>\
     experimental evidence, phylogenetic evidence (inferred through experimental
@@ -106,73 +124,85 @@ genes= genes.drop(columns=["C14"])
     authors in scientific papers), curatorial statements (an expert from a
     database), automatically generated annotations (automated, no person
     reviewed this)\
-    \
-    maybe i can add alpha values to depict how credible the gene assignments
-    are?
--   `C7`: external reference
--   `C8`: Aspect/Category_type- Process, Function, Component (secondary nodes?)
-    type of role gene plays
--   `C9`: Encoder_name
--   `C10` : Encoder
--   `C11` : Function type
+    rename to **evidence_code**\
+    *maybe I can add alpha values to depict how credible the gene assignments
+    are?*
+
+-   `C7`: external reference\
+    rename to **ex_ref**
+
+-   `C8`: Aspect/Category_type- Process, Function, Component type of role gene
+    plays\
+    rename to **category_type**
+
+-   `C9`: Encoder_name\
+    rename to **encode_name**
+
+-   `C10` : Encoder\
+    rename to **encoder**
+
+-   `C11` : Function type\
+    rename to **func_type**
+
 -   `C12` : Taxonomy. All datapoints include "8606" which is homosapien
+
 -   `C13` : PMID- not needed
+
 -   `C14`: Ontology Resources- not needed
--   `C15`: Action upon entity (entity can be searched)
--   `C16` : Database reference
+
+-   `C15`: Action upon entity (entity can be searched)\
+    rename to **action_on_entity**
+
+-   `C16` : Database reference\
+    rename to **db_ref**
 :::
 
 [^1]: <https://geneontology.org/docs/ontology-documentation/>
 
-To create this dictionary I have sampled random datapoint within each column and
-researched them until I found consensus. For example, `C8` is a category/type. I
-searched "Gene Ontology F, C, P" and found [Go Enrichment Analysis
-Tools](https://geneontology.org/docs/go-enrichment-analysis/). The site
+To create this dictionary I have sampled random datapoints within each column
+and researched them until I found consensus between sources. For example, `C8`
+is a category/type. I searched "Gene Ontology F, C, P" and found [Go Enrichment
+Analysis Tools](https://geneontology.org/docs/go-enrichment-analysis/). The site
 describes how the gene ontology tool is used and they explain that a "GO Aspect"
-may be selected and these are "molecular **function**", "cellular
-**component**", and "biological **process**". I went back and searched up the
-corresponding IDs for my randomly chosen rows to confirm their listed "Aspect"
-matched their line in `C8`. I renamed the column as `category_type` instead of
-`aspect` because I just preferred it.\
+may be entered to learn of the particular gene's aspect- "molecular
+**function**", "cellular **component**", and "biological **process**" (F, C, P).
+I searched the database for the corresponding IDs of my randomly selected rows
+and confirmed their listed "Aspect" on the database (F, C or P) matched their
+line in `C8`. I renamed the column `category_type` instead of `aspect`.
+
+\
 ![Example search, "aspect" is listed as "molecular function" and it is coded as
 "F" in column C8](uniprot-function-example.png)
 
-Now, let's modify the column names to be slightly more descriptive:
+With the data's dictionary completed, I'll modify the column names to be more
+descriptive:
 
 ```{python}
 genes.columns=["go_id", "database", "gene_id", "gene_name", "action", "ref", "evidence_code", "ex_ref", "category_type", "encode_name", "encoder", "func_type", "action_on_entity", "db_ref"]
 genes.head()
 ```
 
-Now our NA overview will be more readable:
+The NA overview will now be more readable:
 
 ```{python}
-overview= (
-  genes
-  .agg(["nunique", lambda x: x.isna().sum()])
-  .T)
-
+overview= (genes.agg(["nunique", lambda x: x.isna().sum()]).T)
 
 overview=overview.reset_index()
 overview.columns=["variable", "unique", "NA count"]
 overview
 ```
 
-### Creating a Graph
+### Creating a Graph, Version 1
 
 The data does specify that the edges are the functional annotations and nodes
 are the `go_id` and `gene_name`. In this project however we'll use
 `category_type` and `database` as our categorical groups because each variable
-is perfect with only 3 distinct values.
+is perfect with only 3 distinct values. This is still exploratory. As such, the
+graph will be undirected because we're exploring mutual connection.
 
-[I think `category_type` will have interesting centrality within its groups.
-Biological Process will presumably have many connections. Molecular functions
-should be second best. Cellular Component would presumably . and]{.underline}
-
-This graph will be undirected because we're exploring mutual connection. Action
-had far to many NA values (which could very well mean there is no action to be
-had). Well, I might as well check out the denomination of that, while we're on
-the topic.
+`action` had far too many NA values (which could very well mean there is no
+"action" to be had for some genes). Its best to check out the denomination of
+these NA values while we're on the topic.
 
 ```{python}
 #--grabbing the points needed--
@@ -187,14 +217,18 @@ summary_denom["na_percent"]= (summary_denom["na_count"]/summary_denom["count"]*1
 summary_denom
 ```
 
-There doesn't seem to be much difference in the categories, in terms of the NA
-values within the `action` column. Over 90% of values are NA, but judging by the
-sheer volume and attention to detail of Genomic data– its very likely there is
-no immediate action from the genes marked as such. I thought to keep the
-`action` column and use an "if" function to display action when available,
-however, this `action` column would classify as directional. The rest of my data
-is best in an undirected graph depicting relationships. For the sake of
-simplicity and time, I will choose to drop the `action` column.
+There doesn't seem to be much difference between the categories, in terms of the
+NA values within the `action` variable. Over 90% of values are NA, but judging
+by the sheer volume and attention to detail of Genomic data– its very likely
+there is no immediate action from genes marked as NA. So its emptiness is not
+that its missing but rather the quality of a gene not being the direct
+instigator or catalyst of action.
+
+It might be worth considering keeping the `action` column and using an "if"
+function to display `action` when one is available. However, this `action`
+feature would classify as directional. The rest of my data is better served in
+an undirected graph depicting relationships. For the sake of simplicity and
+time, I will choose to drop the `action` column.
 
 ```{python}
 genes= genes.drop(columns=["action", "ex_ref", "action_on_entity", "db_ref", "encoder"])
@@ -204,11 +238,14 @@ genes= genes.drop(columns=["action", "ex_ref", "action_on_entity", "db_ref", "en
 gg1= nx.Graph()
 ```
 
-I ran a preliminary graph and as its pictured below, it is far to dense to be
-readable. I will take a stratified sample of my data to maintain the original
-balance of the categorical values in `genes`.
+I ran a preliminary graph and as its pictured below and learned there is far too
+much data to depict. A stratified sample of the data will maintain the original
+balance of the categorical values in `genes` while remaining readable.
 
-![](gene_network.png){fig-align="center" width="564"}
+![Stage 1: Screenshot of Full Sample Graph too Dense to
+Read](gene_network.png){fig-align="center" width="564"}
+
+#### Stratified Sampling
 
 ```{python}
 #--stratified sample--
@@ -219,39 +256,59 @@ gg1.add_edges_from(sample[["evidence_code", "go_id"]].values)
 gg1.add_edges_from(sample[["go_id", "category_type"]].values)
 ```
 
-Now that the data is ready for visualization. I want to solidify what it is I
-want to see in the graph. The vantage point I'm looking to take will include a
-variable I elaborated most on in the data dictionary I created earlier.
-`evidence_codes` are notes on the function of a gene. There are 26 unique codes
-in existence under 6 categories. The gene data i am using only has 13 unique
-codes after NA removal.
+After a stratified sample, the data is ready for visualization. The vantage
+point I'm interested in after examining the data involves `evidence_codes` – the
+notes on the function of a gene. There are 26 unique codes in existence divided
+into 6 main code categories:
+
+1.  experimental evidence
+2.  phylogenetic evidence (inferred through experimental evidence)
+3.  computational evidence
+4.  author statements (statements made by authors in scientific papers)
+5.  curatorial statements (an expert from a database)
+6.  automatically generated annotations (automated, no person reviewed this)
+
+*Note: The gene data used here only contains 13 unique codes after NA removal.*
 
 ##### Whats important about this?
 
-The evidence codes can be depicted by alpha levels because there is a
-credibility hierarchy to them. "Non-traceable author statements" have less
-credibility than functions indicated from an actual experiment. So the shade of
-our graph will be linked to how
+The evidence codes assigned to the genes are not "equal" in the sense that one
+code may be more important than another, in a sort of credibility hierarchy.
+"Non-traceable author statements" naturally have less credibility than those
+indicated through an actual experiment. Lowering the opacity on gene annotations
+whose origin is less credible would add an uncluttered extra layer of
+information on the network graph.
+
+As a draft, the visual below shows how I would rate the evidence codes on an
+alpha scale.Those under experimental evidence (which I would say is most
+credible) will be graded as 1 ( EXP, IDA, IPI, IPM , IGI, and IEP). The lowest
+value will be 0.2 assigned to IEA , ND (and NAS upon closer inspection)
+
+![](images/alphascale_plan.png){width="582"}
+
+##### Research Question
+
+With that said, the research question for the rest of this project will be:
 
 ::: {.callout-important appearance="minimal" icon="false"}
 **"Do certain GO aspects (category types) tend to rely on particular evidence
-types, and which genes appear within those pathways?"**
+types? If so, which genes appear within those pathways?"**
 :::
 
-As much as visualization is worth, values are sometimes easier to understand.
-I'll map the code acronyms for clarity.
+##### Mapping Categories
 
-###### Intermission: Values and Regular Plot
+I'll map the definitions for the evidence code acronyms for readability:
 
 ```{python}
+#-- The list-- 
 ec_names= {"IEA": "Inferred from Electronic Annotation",
 "IDA": "Inferred from Direct Assay",
 "ISS": "Inferred from Sequence or Structural Similarity",
 "IMP": "Inferred from Mutant Phenotype",
 "IPI": "Inferred from Physical Interaction",
 "TAS": "Traceable Author Statement",
-"ND": "No biological Data available",
-"IBA": "Inferred from Biological aspect of Ancestor",
+"ND": "No Biological Data Available",
+"IBA": "Inferred from Biological Aspect of Ancestor",
 "IEP": "Inferred from Expression Pattern",
 "EXP": "Inferred from Experiment",
 "NAS": "Non-traceable Author Statement",
@@ -262,7 +319,7 @@ cta_types= {"P": "Process","F": "Function", "C": "Component"}
 ```
 
 ```{python}
-#-- Mapping Evidence Names--
+#-- mapping evidence names--
 genes["evidence_names"]= genes["evidence_code"].map(ec_names)
 
 #-- Mapping Aspect/ Category Types--
@@ -273,48 +330,83 @@ Below is a table of evidence codes and how they're distributed within each
 category:
 
 ```{python}
-cred_count= genes.groupby(["aspect", "evidence_names"]).size().reset_index(name="count").sort_values(["aspect", "count"], ascending= [True,False])
+#--Starter Scores--
+credibility_score= {"EXP": 1, "IDA": 1, "IPI": 1, "IMP": 1, "IGI": 1, "IEP": 1, "ISS": 1, "IBA": 0.5, "IC": 0.5, "TAS": 0.5,"IEA": 0.3, "NAS": 0.2, "ND": 0.2}
+
+genes["cred_score"]= genes["evidence_code"].map(credibility_score)
+
+cred_count= genes.groupby(["aspect", "evidence_names", "cred_score"]).size().reset_index(name="count").sort_values(["aspect", "cred_score"], ascending= [True,False])
 ```
 
-A visual for thoroughness:
-
 ```{python}
-
-#--Pivotting because of the long labels--
+#--Pivotting for Evidence code counts--
 piv_cred_count= cred_count.pivot(index="evidence_names", columns="aspect", values="count").fillna(0)
 
 piv_cred_count= piv_cred_count[["Process", "Function", "Component"]]
 piv_cred_count= piv_cred_count.sort_values(by="Process", ascending=False)
 
-ax= piv_cred_count.plot(kind="barh",figsize=(12,7),
-color= ["hotpink", "dodgerblue", "olivedrab"])
-ax.set_xlabel("Count")
-ax.set_ylabel("")
-ax.set_title("Evidence Code Frequency by Category Type")
-ax.legend(title= "Category Type")
-
-plt.tight_layout()
-plt.show()
+piv_cred_count
 ```
 
-###### Credibility
+#### Evidence Code Composition
 
-I'm scoring the evidence types as follows:\
-![](images/alphascale_plan.png){width="582"}
+I added grades to each evidence code reflecting the credibility hierarchy
+discussed earlier. It will double as alpha values once the graph is rendered.
+The item to address address is the evidence code composition within each aspect.
+I need to normalize the groups to be able to compare them to each other. Its
+also important to take into account the volume (`count`) and value
+(`cred_score`) of each scored evidence code in each category.
 
-Those under experimental evidence will be graded as 1 such as `EXP`, `IDA`,
-`IPI`, `IPM` , `IGI`, and `IEP` .The lowest value should still be visible so 0.2
-will be assigned to `IEA` and `ND`.
+I'll create a dataframe that will support visulization of my assigned
+credibiblity scores. First, I'll calculate the rates in the evidence codes by
+group. My initial instinct was to calculate proportion, but I need to normalize
+to compare the evidence codes within a category because the groups are all
+different sizes.
 
 ```{python}
-alpha_map= {"IEA": 0.2,"ND": 0.2,"TAS": 0.5,"NAS": 0.5,"IC": 0.6,"ISS": 0.7,"IBA": 0.8,"EXP": 1.0,"IDA": 1.0,"IPI": 1.0, "IGI": 1.0,"IMP": 1.0,"IEP": 1.0}
+#-- evidence code rates, by category--
+cred_count["ec_rates"]= (cred_count["count"] / cred_count.groupby("aspect")["count"].transform("sum")).round(3)
+```
+
+Next, I'll add negative values to the datapoints whose credibility is less than
+0.5
+
+```{python}
+cred_count.loc[cred_count["cred_score"]<0.5, "ec_rates"]= -cred_count["ec_rates"]
+```
+
+I'll adjust the dataframe:
+
+```{python}
+cred_plot= pd.pivot_table(cred_count, index= "aspect", columns= "evidence_names", values= "ec_rates")
+```
+
+##### Composition on Plotly
+
+Now well put the plot together. The evidence codes that have a low credibility
+score appear on the left, while the codes that have a high credibility score
+appear on the right.
+
+```{python}
+div_plot= go.Figure()
+
+for col in cred_plot.columns:
+  div_plot.add_trace(go.Bar(x= cred_plot[col], y=cred_plot.index, orientation= "h", name= col, hovertemplate= "%{y}: %{x:.3f}"))
+
+div_plot.update_layout(template= "plotly_white", barmode= "relative", height=600, width=900, yaxis_autorange="reversed", bargap=0.5, legend_orientation="v", title= "Evidence Code Rates and Credibility by Annotation Category Type (Aspect)", title_x= 0.5, title_font_size=18)
+
+#-- adding annotations for right and left-- 
+div_plot.add_annotation(x= 0.25, y= 1.1, text= "credible → ", xref="x", yref= "paper",showarrow=False, font=dict(size= 12, color= "black"))
+
+div_plot.add_annotation(x= -0.25, y= 1.1, text= "← less credible", xref="x", yref= "paper", showarrow=False, font=dict(size= 12, color= "black"))
+
+div_plot.show()
 ```
 
 ## Centrality of Nodes in a Graph
 
-Even in my sample there are a lot of datapoints which will lead to another
-unreadable network clump. Centrality and eigenvector centrality will help
-identify which nodes are the most connected and which of those matter.
+Centrality and eigenvector centrality will help identify which nodes are the
+most connected and which of those matter.
 
 ```{python}
 centrality= nx.degree_centrality(gg1)
@@ -322,90 +414,19 @@ eig_centrality= nx.eigenvector_centrality(gg1, max_iter=2000)
 
 #-- creating new columns for centrality-- 
 gene_centrality= (sample[["gene_name"]].drop_duplicates())
-
 gene_centrality["degree_centrality"]= gene_centrality["gene_name"].map(centrality)
 gene_centrality["eig_centrality"]= gene_centrality["gene_name"].map(eig_centrality)
 
+
+top_genes= gene_centrality.sort_values("eig_centrality", ascending=False).head(30)
+
 #-- isolating top genes--
-top_genes= gene_centrality.sort_values("eig_centrality",ascending=False).head(5)
+top_genes_2= gene_centrality.sort_values("eig_centrality", ascending=False).head(8)
 ```
 
 ```{python}
 top_sample= sample[sample["gene_name"].isin(top_genes["gene_name"])]
 ```
-
-###### The Graph
-
-```{python}
-#-- edges--
-gg1.add_edges_from(top_sample[["gene_name", "evidence_code"]].values)
-gg1.add_edges_from(top_sample[["evidence_code", "go_id"]].values)
-gg1.add_edges_from(top_sample[["go_id", "category_type"]].values)
-
-#--node gruops--
-gene_nodes= set(top_sample["gene_name"])
-evidence_nodes= set(top_sample["evidence_code"])
-go_nodes= set(top_sample["go_id"])
-category_nodes= set(top_sample["category_type"])
-```
-
-```{python}
-#-- assigning my customizations--
-category_color_map= {"P": "skyblue", "F": "skyblue", "C": "skyblue"}
-gene_color= "mediumpurple"
-go_color= "gold"
-evidence_code_color= "darkgray"
-
-#-- selecting colors--
-node_colors = []
-
-for node in gg1.nodes():
-  if node in category_nodes:
-    node_colors.append(category_color_map[node])
-  elif node in gene_nodes:
-    node_colors.append(gene_color)
-  elif node in evidence_nodes:
-    node_colors.append(evidence_code_color)
-  elif node in go_nodes:
-    node_colors.append(go_color)
-  else:
-    node_colors.append("lightgray")
-        
-pos= nx.spring_layout(gg1, seed=30)
-```
-
-I'll assign a scaling function over the nodes in my graph. In testing I find
-that despite sampling there is still too many nodes and edges in the graph to
-make it readable. Adding a visual priority to nodes that have the highest eigen
-values/ are most important and connected to other important nodes.
-
-```{python}
-#--scaling eig values to reflect on node size--
-base_node_size=50
-scale= 1000
-node_sizes= [base_node_size+ eig_centrality[node] * scale for node in gg1.nodes()]
-```
-
-```{python}
-#-- drawing the graph--
-plt.figure(figsize=(35,30), dpi=300)
-
-nx.draw_networkx_edges(gg1, pos, alpha=0.25, width=.5)
-nx.draw_networkx_nodes(gg1, pos, node_color= node_colors, node_size=node_sizes)
-nx.draw_networkx_nodes(gg1, pos, )
-
-nx.draw_networkx_labels(gg1, pos, font_size=9)
-
-plt.title("Gene Ontology Annotation Network: Relationships Between GO Aspects, Evidence Codes, and Associated Genes")
-plt.axis("off")
-plt.show()
-```
-
-### Comparing Centrality Across Categorical Groups
-
-The categories assigned to the genes describe what the particular gene
-participates in. As we've seen, genes in this dataset predominantly participate
-in biological processes. And less so in
 
 ```{python}
 #--creating summary of centrality by nodes--
@@ -421,54 +442,328 @@ cats.columns= ["node", "category_type"]
 #--putting them together--
 centrality_summary= centrality_summary.merge(cats, on="node", how= "left")
 
-#--labeling genes just in case--
+#--labeling the nodes correctly--
 centrality_summary["category_type"]= centrality_summary["category_type"].fillna("gene")
+
+ec_names_set= set(ec_names.keys())
+
+centrality_summary["category_type"]= (centrality_summary["node"].map(
+  lambda x: 
+        "evidence_code" if x in ec_names_set
+        else "aspect"    if x in {"C", "F", "P"}
+        else "go_term"   if x in set(genes["go_id"].dropna())
+        else "gene"))
+```
+
+## Creating a Graph, Version 2
+
+```{python}
+#--resetting graph--
+gg1= nx.Graph()
+
+#-- edges--
+gg1.add_edges_from(top_sample[["gene_name", "evidence_code"]].values)
+gg1.add_edges_from(top_sample[["evidence_code", "go_id"]].values)
+gg1.add_edges_from(top_sample[["go_id", "category_type"]].values)
+
+#--node gruops--
+gene_nodes= set(top_sample["gene_name"])
+evidence_nodes= set(top_sample["evidence_code"])
+go_nodes= set(top_sample["go_id"])
+category_nodes= set(top_sample["category_type"])
+```
+
+I'll assign a scaling function over the nodes in my graph. In testing I find
+that despite sampling there is still too many nodes and edges in the graph to
+make it readable. Adding a visual priority to nodes that have the highest eigen
+values/ are most important and connected to other important nodes.
+
+```{python}
+#-- trying to emulate plotly_white's colors--"
+category_color_map= {"P": "#636EFA", "F": "#00CC96", "C": "#EF553B"}
+gene_color= "#AB63FA"
+go_color= "#FFA15A"
+evidence_code_color= "#B6B6B6"
+
+#-- defining the scale--
+base_sizes= {
+    "category": 800,
+    "gene": 200,
+    "evidence_code": 200,
+    "go_term": 10}
+scale= 2500
+
+#-- creating lists--
+node_colors= []
+node_sizes= []
+
+#-- a loop to assign my specs--
+for node in gg1.nodes():
+    if node in category_nodes:
+      node_colors.append(category_color_map[node])
+      base= base_sizes["category"]
+    elif node in gene_nodes:
+        node_colors.append(gene_color)
+        base= base_sizes["gene"]
+    elif node in evidence_nodes:
+        node_colors.append(evidence_code_color)
+        base= base_sizes["evidence_code"]
+    elif node in go_nodes:
+        node_colors.append(go_color)
+        base= base_sizes["go_term"]
+    else:
+        node_colors.append("#E5E5E5")
+        base= 40
+    eig= eig_centrality.get(node, 0)
+    node_sizes.append(base + eig * scale)
+
+
+#--spacing fix for graph--
+#pos_init= {
+   ## "P": np.array([0, 0]),
+   # "F": np.array([30, 20]),
+   # "C": np.array([25, -25])}
+        
+#pos= nx.spring_layout(gg1,pos=pos_init, fixed= list(pos_init.keys()), seed=33, k=8, iterations=2000)
+```
+
+I'll assigned a scaling function over the nodes in my graph. In testing I found
+that despite sampling there were still too many nodes and edges in the graph to
+make it readable. Adding a visual priority to nodes that have the highest eigen
+values/ are most important and connected to other important nodes adds to the
+readability of the graph.
+
+Next I encountered issues with overlapping nodes. Cutting down the data again
+was not something I could accept. Upon researching the issue, it was possible to
+choose anchor points on the graph in the form of arrays. I selected the aspect
+nodes as anchors but the graph was still not appearing in a satisfactory way.
+
+The closest thing to a solution came from "GraphViz AGraph" a module for
+NetworkX.[^2] The module can be modified a little easier.
+
+[^2]: Graphviz AGraph Documentation:
+    <https://networkx.org/documentation/stable/_modules/networkx/drawing/nx_agraph.html#graphviz_layout>
+
+```{python}
+pos= graphviz_layout(gg1, prog="sfdp", args="-Goverlap=false -Gsep=+10")
+```
+
+```{python}
+#--not labeling go nodes--
+labels= {n: n for n in gg1.nodes() if n in gene_nodes| category_nodes| evidence_nodes}
+
+#-- drawing the graph--
+plt.figure(figsize=(20,20), dpi=300)
+#--changing background--
+plt.gca().set_facecolor("white")
+plt.gcf().set_facecolor("white")
+
+nx.draw_networkx_edges(gg1, pos, alpha=0.15, width=0.4, edge_color="#1C1C1C")
+nx.draw_networkx_nodes(gg1, pos, node_color=node_colors, node_size=node_sizes)
+nx.draw_networkx_labels(gg1, pos, labels=labels, font_size=8, font_color="#2a2a2a")
+
+plt.title("Gene Ontology Annotations:\nNetworks Between GO IDs, Evidence Codes, and Associated Genes", fontsize=12, fontweight="normal", color="#1C1C1C")
+plt.axis("off")
+plt.show()
+```
+
+##### Graph Descriptive Stats
+
+```{python}
+print("Nodes:", gg1.number_of_nodes())
+print("Annotation relationships (edges):", gg1.number_of_edges())
+print("Density:", nx.density(gg1))
+print("Avrage Connections (degree):", sum(x for n, x in gg1.degree()) / gg1.number_of_nodes())
+```
+
+### Comparing Centrality Across Categorical Groups
+
+The categories assigned to the genes describe what the particular gene
+participates in. As we've seen, genes in this dataset predominantly participate
+in biological processes. And less so as a singular component or function.
+
+```{python}
+#--creating summary of centrality by nodes--
+centrality_summary= pd.DataFrame({
+  "node": list(centrality.keys()),
+  "deg_centr": list(centrality.values()),
+  "eig_centr": list(eig_centrality.values())})
+  
+#-- attaching the categories--
+cats= genes[["go_id", "category_type"]].drop_duplicates()
+cats.columns= ["node", "category_type"]
+
+#--putting them together--
+centrality_summary= centrality_summary.merge(cats, on="node", how= "left")
+
+#--labeling the nodes correctly--
+centrality_summary["category_type"]= centrality_summary["category_type"].fillna("gene")
+
+ec_names_set= set(ec_names.keys())
+
+centrality_summary["category_type"]= (centrality_summary["node"].map(
+  lambda x: 
+        "evidence_code" if x in ec_names_set
+        else "aspect"    if x in {"C", "F", "P"}
+        else "go_term"   if x in set(genes["go_id"].dropna())
+        else "gene"))
 ```
 
 ```{python}
 centrality_summary.groupby("category_type")[["deg_centr", "eig_centr"]].describe()
 ```
 
+Aspect has the highest amount of connections, which makes sense, all gene
+annotations are labeled with an aspect, so they're all connected to aspect. Same
+idea goes for evidence code. Gene is the least connected with a mean of
+0.000681, this also makes sense because a gene's functional annotations are
+specific.
+
 ```{python}
+fig, axes= plt.subplots(1, 2, figsize=(12, 5))
+palette= ["#9F99E8", "#5DCAA5", "#F0997B", "#F4C0D1"]
+#---Degree Cent---
+sns.boxplot(data=centrality_summary,
+    x="category_type",
+    y="deg_centr",
+    palette=palette,
+    ax=axes[0])
+axes[0].set(title="Degree Centrality \nMany neighbors?", xlabel="", ylabel="")
+axes[0].title.set_fontsize(14)
 
-fig, axes= plt.subplots(1, 2, figsize= (11, 4))
-
-for ax, col, label in zip(axes, ["deg_centr", "eig_centr"], ["Degree Centrality", "Eigenvector Centrality"]):
-  groups= [group[col].values for x, group in centrality_summary.groupby("category_type")]
-  labels= centrality_summary["category_type"].unique()
-  ax.boxplot(groups, labels=labels)
-  ax.set_title(label)
-  ax.set_ylabel("Score")
-  ax.set_xlabel("GO Aspect / Node Type") 
+#--- Eigenvector Centr---
+sns.boxplot(
+    data=centrality_summary,
+    x="category_type",
+    y="eig_centr",
+    palette=palette,
+    ax=axes[1])
+axes[1].set_yscale("log")
+axes[1].set(title="Eigenvector Centrality (logged) \nMany important neighbors?", xlabel="", ylabel="")
+axes[1].title.set_fontsize(14)
 
 plt.tight_layout()
 plt.show()
 ```
 
-### Statistical Tests on Categorical Data
+The boxplot is also a great visual for the connections in this data. Aspect and
+evidence code are the hubs, we see they are really the only visible boxes in
+Degree Centrality because they are what other nodes connect to. There's one
+evidence code that's an outlier seen floating to the top of the plot,
+exponentially more connected than any other evidence code. Our final graph
+depicted this, IEA was a large node in the center.
 
-(Kruskal Wallas)
+In the Eigenvector centrality plot also works in the same manner, the boxes
+floating to the top are most important. Aspect is most importannt and evenly
+spaced. I logged it to see the differences between them more clearly. Aspect has
+many connections and many of those connections are important.
 
-### Centrality by Credibility
+What we've seen answers the question Do category types rely on a particular
+evidence types?
+
+Yes, we see that the categories (aspects) rely on IEA (Inferred from Electronic
+Annotation). However, the research question was more specific.
+
+> *"Do certain GO aspects (category types) tend to rely on particular evidence
+> types? If so, which genes appear within those pathways?"*
+
+We'll need to look at pair wise relations to answer this. The Kruskal Wallis
+test calculates ranks shared across the categories, and because our data is not
+evenly distributed this nonparametric test is best.
+
+### Statistical Test on Categorical Data
+
+#### Kruskal Wallis Test
+
+*"Are there differences between groups?"*
+
+```{python}
+#--grouping deg centr--
+groups_dc= [group["deg_centr"].values
+for name, group in centrality_summary.groupby("category_type")]
+
+#-- grouping eig-- 
+groups_ec= [group["eig_centr"].values
+for name, group in centrality_summary.groupby("category_type")]
+
+#-- Kruskal-- 
+k_dc= kruskal(*groups_dc)
+k_ec= kruskal(*groups_ec)
+
+#-- results--
+print("Kruskal Wallis Results")
+print(f"(deg_centr): H= {k_dc.statistic:.3f}, p-val= {k_dc.pvalue:.3e}")
+print(f"(eig_centr): H= {k_ec.statistic:.3f}, p-val= {k_ec.pvalue:.3e}")
+```
+
+The resulting p-values of the Kruskal test are incredibly low, so the result is
+considered significant. There is absolutely a difference between categories.
+Since the result was significant, I'll run a Dunn post-hoc test to it calculate
+ranks across groups. Its considered the correct adhoc for KW.[^3]
+
+[^3]: A PostHoc Test for Kruskal Wallis:
+    <https://www.theanalysisfactor.com/dunns-test-post-hoc-test-after-kruskal-wallis/>
+
+#### Post-Hoc: Dunn
+
+We've established that IEA evidence code is an extreme outlier. This skews the
+means. We'll pull the medians in from the centrality dataframe to compare with
+the Dunn results. The Dunn Post Hoc calculates the pairwise ranks which adds
+context to the Kruskal.
+
+```{python}
+#--Grabbing Medians--
+print(centrality_summary.groupby("category_type")[["deg_centr", "eig_centr"]].median().round(3))
+```
+
+```{python}
+# --- Dunn's post-hoc ---
+dunn_deg= sp.posthoc_dunn(centrality_summary, val_col="deg_centr", group_col="category_type", p_adjust="fdr_bh")
+
+dunn_eig= sp.posthoc_dunn(centrality_summary, val_col="eig_centr", group_col="category_type", p_adjust="fdr_bh")
+
+print("Degree centrality:\n", dunn_deg)
+print("\nEigenvector centrality:\n", dunn_eig)
+```
+
+Dunn's output identifies `gene` and `aspect` (category_type), `gene` and
+`evidence_code`, `gene` and `go_term`, `evidence_code` and `go_term`, as having
+significant differences between pairs.
+
+The pairs identified by eigenvector centrality are `gene` and `go_term`, `gene`
+and `aspect`, and `gene` and `evidence_code`. These pairs have significant
+differences.
+
+So, the research question is answered. There is no statistically significant
+difference is shown between aspect and evidence. Gene nodes appear in nearly all
+the pair comparisons found in Dunns output as having significant differences.
+
+### Spearman Rank Relations
 
 ```{python}
 
-for x, row in genes.iterrows():
-  gene_node= row["gene_name"]
-  go_node= row["go_id"]
-  evidence_node= row["evidence_code"]
-  alpha_values= alpha_map.get(evidence_node, 0.5)
-  
-  gg1.add_node(gene_node, node_type="gene")
-  gg1.add_node(go_node, node_type="gene")
-  gg1.add_edge(gene_node, go_node, alpha=alpha_values, evidence_code= evidence_node)
+cred_score_map = dict(zip(genes["gene_name"], genes["cred_score"]))
+centrality_summary["cred_score"] = centrality_summary["node"].map(cred_score_map)
+# drop missing credibility scores first
+s_r= centrality_summary.dropna(subset=["cred_score"])
+
+corr_deg, p_deg= spearmanr(s_r["cred_score"], s_r["deg_centr"])
+corr_eig, p_eig= spearmanr(s_r["cred_score"], s_r["eig_centr"])
+
+print("Spearman (deg):", corr_deg, "p-val(deg):", p_deg)
+print("Spearman (eig):", corr_eig, "p-val(eig):", p_eig)
 ```
 
-##### Confidence Graph
+The spearman rank test adds one last layer in this analysis. Its results show
+that there is a weak but positive relationship between credibility score and
+centrality, and a negative relationship between credibility score and eigen
+centrality. So the however slight there higher degree centrality is associated
+with higher credibility score. and in a stronger relationship, lower eigen
+centrality is associated with higher credibility.
 
-##### recomputing centrality
-
-##### comparison to full graph results
+In all, our exploration of the gene ontology data tells us that the network is
+structured arounf aspects and evidence codes, that influence and importance does
+not equal credibility and that genes nodes are very much
 
 --------------------------------------------------------------------------------
 
@@ -476,3 +771,23 @@ for x, row in genes.iterrows():
 
 Matplotlib List of Named colors:\
 <https://matplotlib.org/stable/gallery/color/named_colors.html>
+
+Plotly Diverging Bar Chart:
+
+<https://www.geeksforgeeks.org/python/diverging-bar-chart-using-python/>
+
+Customizing Plotly:
+
+[https://plotly.com/python/templates/https://plotly.com/python/templates/](https://plotly.com/python/templates/)
+
+Fixing spacing issue with Graphviz_layout()
+
+<https://networkx.org/documentation/stable/_modules/networkx/drawing/nx_agraph.html#graphviz_layout>
+
+NetworkX Crash Course: Graph Theory in Python:
+
+<https://youtu.be/VetBkjcm9Go?si=KtmFHoyRwoprbuub>
+
+Introduction nto Network Analysis in Python
+
+<https://www.datacamp.com/courses/introduction-to-network-analysis-in-python?utm_medium=organic_social&utm_campaign=sharewidget&utm_content=coursedetailpage>
