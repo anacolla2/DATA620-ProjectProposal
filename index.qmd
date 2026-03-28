@@ -6,6 +6,7 @@ embed-resources: true
 fig-align: center
 toc: true
 toc-depth: 6
+toc-expand: true
 execute: 
   warning: false
   error: false
@@ -488,9 +489,9 @@ evidence_code_color= "#B6B6B6"
 #-- defining the scale--
 base_sizes= {
     "category": 800,
-    "gene": 200,
+    "gene": 300,
     "evidence_code": 200,
-    "go_term": 10}
+    "go_term": 20}
 scale= 2500
 
 #-- creating lists--
@@ -545,7 +546,7 @@ NetworkX.[^2] The module can be modified a little easier.
     <https://networkx.org/documentation/stable/_modules/networkx/drawing/nx_agraph.html#graphviz_layout>
 
 ```{python}
-pos= graphviz_layout(gg1, prog="sfdp", args="-Goverlap=false -Gsep=+10")
+pos= graphviz_layout(gg1, prog="sfdp", args="-Goverlap=false -Gsep=+5")
 ```
 
 ```{python}
